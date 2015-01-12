@@ -11,5 +11,18 @@
     ],
     "memory": 10,
     "essential": true
+  },
+  {
+    "name": "ecs-api",
+    "image": "sergeimatheson/ecs-api:latest",
+    "cpu": 100,
+    "portMappings": [
+      {
+       "containerPort": 80,
+       "hostPort": 3000
+      }
+    ],
+    "memory": 10,
+    "essential": true
   }
 ]
