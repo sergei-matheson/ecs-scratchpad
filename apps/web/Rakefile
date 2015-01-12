@@ -72,19 +72,27 @@ namespace :grunt do
 end
 
 namespace :docker do
+  app_name = "ecs-web"
+  hub_user = "sergeimatheson"
+  repo = "#{hub_user}/#{app_name}"
+
   desc "Builds a docker image for the current codebase"
   task :build => 'grunt:build' do
-    `docker build -t sergeimatheson/ecs-web .`
+    `docker build -t #{repo} .`
+  end
+  desc "Pushes the docker image to hub.docker.com"
+  task :push => 'docker:build' do
+    `docker push #{repo}`
   end
   desc "Runs current codebase as a docker container"
   task :start => 'docker:build' do
-    puts `docker run -d -P --name="ecs-web" sergeimatheson/ecs-web`
-    puts `open http://$(boot2docker ip 2>/dev/null):$(docker port ecs-web 80 | sed s/0.0.0.0://)`
+    puts `docker run -d -P --name="#{app_name}" #{repo}`
+    puts `open http://$(boot2docker ip 2>/dev/null):$(docker port #{app_name} 80 | sed s/0.0.0.0://)`
   end
   desc "Runs current codebase as a docker container"
   task :stop => 'docker:build' do
-    puts `docker stop ecs-web`
-    puts `docker rm ecs-web`
+    puts `docker stop #{app_name}`
+    puts `docker rm #{app_name}`
   end
 end
 
