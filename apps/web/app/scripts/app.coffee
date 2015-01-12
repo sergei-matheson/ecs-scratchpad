@@ -18,19 +18,19 @@ angular
     'ui.router'
   ])
   .config ($stateProvider, $urlRouterProvider) ->
-    $urlRouterProvider.otherwise('/main')
+    $urlRouterProvider.otherwise('/main/')
 
     $stateProvider
       .state 'main',
-        url: '/main'
+        url: '/main/'
         templateUrl: 'views/main.html'
       .state 'about',
-        url: '/about'
+        url: '/about/'
         templateUrl: 'views/about.html'
       .state 'contact',
-        url: '/contact'
+        url: '/contact/'
         templateUrl: 'views/contact.html'
   .config ($locationProvider) ->
     $locationProvider.html5Mode(
-      enabled: true, requireBase:false
+      enabled: true
     ).hashPrefix('#')

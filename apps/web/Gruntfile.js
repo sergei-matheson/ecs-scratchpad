@@ -15,6 +15,9 @@ module.exports = function (grunt) {
   // Time how long tasks take. Can help when optimizing build times
   require('time-grunt')(grunt);
 
+  // Add support for HTML5 pushstate when serving in dev mode.
+  var pushState = require('connect-pushstate')
+
   // Configurable paths for the application
   var appConfig = {
     app: require('./bower.json').appPath || 'app',
@@ -78,7 +81,7 @@ module.exports = function (grunt) {
               connect().use(
                 '/bower_components',
                 connect.static('./bower_components')
-              ),
+              ).use(pushState()),
               connect.static(appConfig.app)
             ];
           }
