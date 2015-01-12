@@ -1,0 +1,56 @@
+# encoding: utf-8
+
+require 'rubygems'
+require 'bundler'
+
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
+end
+require 'rake'
+
+namespace :docker do
+  app_name = "ecs-api"
+  hub_user = "sergeimatheson"
+  image = "#{hub_user}/#{app_name}"
+
+  desc "Echoes name of the docker image for the current codebase"
+  task :image_name do
+    puts image
+  end
+
+  desc "Builds a docker image for the current codebase"
+  task :build do
+    puts `docker build --no-cache -t #{image} .`
+  end
+  desc "Pushes the docker image to hub.docker.com"
+  task :push => 'docker:build' do
+    `docker push #{image}`
+  end
+  desc "Runs current codebase as a docker container"
+  task :start => 'docker:build' do
+    puts `docker run -d -P --name="#{app_name}" #{image}`
+    puts `open http://$(boot2docker ip 2>/dev/null):$(docker port #{app_name} 80 | sed s/0.0.0.0://)`
+  end
+  desc "Stops the docker container that is running the codebase"
+  task :stop do
+    puts `docker stop #{app_name}`
+    puts `docker rm #{app_name}`
+  end
+end
+
+namespace :test do
+
+  desc "Starts up the app, runs the unit specs and stops the app"
+  task :unit do
+    with_app_running do
+      grunt "karma:unit"
+    end
+  end
+
+end
+
+task :default => ["test:unit"]

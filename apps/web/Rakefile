@@ -89,8 +89,8 @@ namespace :docker do
     puts `docker run -d -P --name="#{app_name}" #{repo}`
     puts `open http://$(boot2docker ip 2>/dev/null):$(docker port #{app_name} 80 | sed s/0.0.0.0://)`
   end
-  desc "Runs current codebase as a docker container"
-  task :stop => 'docker:build' do
+  desc "Stops the docker container that is running the codebase"
+  task :stop do
     puts `docker stop #{app_name}`
     puts `docker rm #{app_name}`
   end
