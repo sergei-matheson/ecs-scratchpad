@@ -1,0 +1,17 @@
+source 'https://rubygems.org'
+
+gem 'bundler'
+
+group :development, :test do
+  gem 'pry'
+  # Compass is needed to compile assets for distribution using Grunt.
+  gem 'compass'
+  gem 'rspec'
+  gem 'capybara'
+  gem 'poltergeist'
+  gem 'rspec_junit_formatter'
+  gem 'selenium-webdriver'
+  gem 'httparty'
+end
+
+gem 'rake'

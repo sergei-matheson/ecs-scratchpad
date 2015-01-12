@@ -1,0 +1,102 @@
+# encoding: utf-8
+
+require 'rubygems'
+require 'bundler'
+require 'rspec/core/rake_task'
+require 'httparty'
+
+begin
+  Bundler.setup(:default, :development)
+rescue Bundler::BundlerError => e
+  $stderr.puts e.message
+  $stderr.puts "Run `bundle install` to install missing gems"
+  exit e.status_code
+end
+require 'rake'
+
+def grunt target
+  sh "grunt #{target.to_s}"
+end
+
+def app_running?
+  HTTParty.get('http://localhost:9000').success?
+rescue Errno::ECONNREFUSED
+  false
+end
+
+def start_app
+  spawn "grunt serve"
+end
+
+def with_app_running
+  pid = nil
+  if app_running?
+    puts "Not starting (app already running)"
+  else
+    puts 'starting app...'
+    pid = start_app
+    sleep 1 until app_running?
+    puts "app started with pid #{pid}"
+  end
+  begin
+    result = yield
+  ensure
+    if pid
+      puts "stopping app with pid #{pid}"
+      Process.kill :SIGKILL, pid
+      puts 'app stopped'
+    end
+  end
+  result
+end
+
+def npm_bin
+  @npm_bin ||= begin
+    sh './ci_grunt_setup.sh'
+    `npm bin`.strip
+  end
+end
+
+namespace :grunt do
+
+  desc "Build assets using grunt"
+  task :build do
+    grunt :build
+  end
+
+  desc "Test using grunt"
+  task :test do
+    grunt :test
+  end
+
+end
+
+namespace :docker do
+  desc "Builds a docker image for the current codebase"
+  task :build => 'grunt:build' do
+    `docker build -t sergeimatheson/ecs-web .`
+  end
+  desc "Runs current codebase as a docker container"
+  task :start => 'docker:build' do
+    puts `docker run -d -P --name="ecs-web" sergeimatheson/ecs-web`
+    puts `open http://$(boot2docker ip 2>/dev/null):$(docker port ecs-web 80 | sed s/0.0.0.0://)`
+  end
+  desc "Runs current codebase as a docker container"
+  task :stop => 'docker:build' do
+    puts `docker stop ecs-web`
+    puts `docker rm ecs-web`
+  end
+end
+
+namespace :test do
+
+  desc "Starts up the app, runs the unit specs and stops the app"
+  task :unit do
+    with_app_running do
+      grunt "karma:unit"
+    end
+  end
+
+end
+
+task :default => ["test:unit"]
